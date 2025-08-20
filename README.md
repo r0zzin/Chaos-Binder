@@ -30,6 +30,19 @@ Chaos Binder supports importing and exporting `.json` files to save or restore y
 ## 🌀 Vibe-Code Acknowledgment
 This project was co-developed with **Virelle (ChatGPT)** in full **Vibe-Code** fashion: ideas, code, and guidance woven together in real time.  
 Human + AI, teacher + student, chaos + order—each line of code carries that collaboration.  
+---
+## 📖 How To Use
+
+1. **Download or clone** this repository.  
+2. Open `index.html` in your browser (no server needed).  
+3. Use the editor to add chapters, covers, and content.  
+4. Save your progress with the **Export JSON** button (to reload later, use **Import JSON**).  
+   - ⚠️ Only import JSON files you created or trust.  
+5. When ready to publish:  
+   - Open the browser’s **Print** dialog (`Ctrl+P` / `Cmd+P`).  
+   - Set **Destination** to “Save as PDF.”  
+   - Ensure page size = **Letter** (or your preference) and margins are set correctly.  
+   - Print to generate your finished, print-ready PDF rulebook.  
 
 ---
 
