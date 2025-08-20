@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chaos Binder</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <style id="customCssStyle"></style>
+</head>
+<body>
+  <div class="toolbar" id="toolbar">
+    <div class="group">
+      <button id="add-chapter">+ Chapter</button>
+      <button id="add-page">+ Page Block</button>
+      <button id="insert-toc">+ TOC Page</button>
+      <button id="insert-index">+ Index Page</button>
+    </div>
+    <div class="group">
+      <button id="save-local">💾 Save (LocalStorage)</button>
+      <button id="load-local">📥 Load (LocalStorage)</button>
+      <button id="clear-local">🧹 Clear Local</button>
+    </div>
+    <div class="group">
+      <button id="open-json">📂 Open JSON…</button>
+      <button id="save-json">💾 Save JSON</button>
+      <button id="save-as-json">📝 Save As JSON…</button>
+      <button id="import-json">⬆️ Import JSON (picker)</button>
+      <input type="file" id="jsonFile" accept=".json" style="display:none">
+    </div>
+    <div class="group">
+      <button id="toggleMeta">Hide Meta</button>
+    </div>
+    <div class="group">
+      <label><input type="checkbox" id="count-cover" checked> Number starts at 1 after cover</label>
+      <label><input type="checkbox" id="auto-number" checked> Auto Page Numbers</label>
+      <label><input type="checkbox" id="index-after-chapters" checked> Place Index after chapters</label>
+    </div>
+    <div style="flex:1"></div>
+    <div id="status" class="small"></div>
+  </div>
+
+  <div class="editor-area">
+    <div class="editor-pane" id="editorPane"></div>
+    <div class="preview-pane" id="preview"></div>
+    <div class="meta-pane" id="metaPane">
+<details>
+  <summary>Edit Cover Info</summary>
+      <h3>Cover Editor</h3>
+      <div class="meta-field">
+        <label>Title</label>
+        <input id="coverTitleInput" value="Chaos Binder">
+      </div>
+      <div class="meta-field">
+        <label>Subtitle</label>
+        <input id="coverSubtitleInput" value="Crafted for GMs, scribes, and scribblers of the void.">
+      </div>
+      <div class="meta-field">
+        <label>Author</label>
+        <input id="coverAuthorInput" value="r0zzin">
+      </div>
+
+
+      <h3>Cover Background</h3>
+      <div class="meta-field">
+        <label><input type="checkbox" id="coverBgEnabled"> Enable cover image</label>
+        <label>Image URL</label>
+        <input id="coverBgUrl" placeholder="https://...">
+        <label>Fit</label>
+        <select id="coverBgFit">
+          <option value="cover">cover</option>
+          <option value="contain">contain</option>
+        </select>
+        <label>Position</label>
+        <select id="coverBgPos">
+          <option value="center">center</option>
+          <option value="top">top</option>
+          <option value="bottom">bottom</option>
+        </select>
+      </div>
+
+      <h3>Cover Sigil / Logo</h3>
+      <div class="meta-field">
+        <label><input type="checkbox" id="sigilEnabled"> Show sigil</label>
+        <label>Image URL</label>
+        <input id="sigilUrl" placeholder="https://...">
+        <label>Size</label>
+        <select id="sigilSize">
+          <option value="small">small</option>
+          <option value="medium" selected>medium</option>
+          <option value="large">large</option>
+        </select>
+        <label>Caption (optional)</label>
+        <input id="sigilCaption">
+      </div>
+
+      <h3>Cover Text Colors</h3>
+      <div class="meta-field">
+        <label>Title color</label>
+        <input type="color" id="coverTitleColorPicker" value="#402020">
+        <label>Subtitle color</label>
+        <input type="color" id="coverSubtitleColorPicker" value="#555555">
+      </div>
+</details>
+<details>
+  <summary>Edit Headers & Footers</summary>
+      <h3>Running Headers & Footers</h3>
+      <div class="meta-field">
+        <label><input type="checkbox" id="showHeader" checked> Show header</label>
+        <label><input type="checkbox" id="showFooter" checked> Show footer</label>
+        <label>Header (Left)</label>
+        <input id="hdrLeft" value="{book}">
+        <label>Header (Right)</label>
+        <input id="hdrRight" value="{chapter}">
+        <label>Footer (Left)</label>
+        <input id="ftrLeft" value="{chapter}">
+        <label>Footer (Right)</label>
+        <input id="ftrRight" value="{page}">
+        <label>Tokens: {book} cover title, {chapter} current chapter, {page} page number, {date} today.</label>
+      </div>
+</details>
+<details>
+  <summary>Custom CSS</summary>
+      <h3>Custom CSS</h3>
+      <div class="meta-field">
+        <textarea id="customCssInput" rows="6"></textarea>
+        <button id="applyCss">Apply CSS</button>
+        <button id="clearCss">Clear CSS</button>
+      </div>
+</details>
+<details>
+  <summary>Full ToC</summary>
+      <h3>Table of Contents</h3>
+      <ul class="toc-list" id="tocList"></ul>
+</details>
+<details>
+  <summary>Full Index</summary>
+      <h3>Index</h3>
+      <div id="indexList"></div>
+</details>
+      <p class="small">Tip: Drag a .json file onto the top toolbar to import.</p>
+    </div>
+  </div>
+
+  <template id="chapterTemplate">
+    <details class="chapter-block">
+      <summary>
+        <span class="chapter-title" contenteditable>Untitled Chapter</span>
+      </summary>
+      <div class="chapter-controls">
+        <label class="small"><input type="checkbox" class="include-checkbox" checked> Include</label>
+        <button class="dup">Duplicate</button>
+        <button class="del">Delete</button>
+      </div>
+      <textarea class="chapter-text"></textarea>
+    </details>
+  </template>
+
+  <template id="blankPageTemplate">
+    <div class="page" data-kind="content">
+      <div class="page-header" aria-hidden="true"><div></div><div></div></div>
+      <div class="block col-12 row-10"></div>
+      <div class="page-footer" aria-hidden="true"><div></div><div class="center-links"></div><div></div></div>
+    </div>
+  </template>
+
+  <template id="coverPageTemplate">
+    <div class="page" id="coverPage" data-kind="cover">
+      <div class="block col-12 row-10">
+        <h1 class="center title" id="coverTitle">Chaos Binder</h1>
+        <div class="center subtitle" id="coverSubtitle">Crafted for GMs, scribes, and scribblers of the void.</div>
+        <div class="center author-name" id="coverAuthor">by r0zzin</div>
+        <figure id="coverFigure" style="display:none">
+          <img id="coverSigil" src="" alt="Sigil">
+          <figcaption class="caption" id="coverSigilCaption"></figcaption>
+        </figure>
+      </div>
+    </div>
+  </template>
+
+  <template id="tocPageTemplate">
+    <div class="page" id="tocPage" data-kind="toc">
+      <div class="block col-12 row-30">
+        <h1>Table of Contents</h1>
+        <div id="tocMount"></div>
+      </div>
+      <div class="page-footer" aria-hidden="true"><div></div><div class="center-links"></div><div></div></div>
+    </div>
+  </template>
+
+  <template id="indexPageTemplate">
+    <div class="page" id="indexPage" data-kind="index">
+      <div class="block col-12 row-30">
+        <h1>Index</h1>
+        <div id="indexMount"></div>
+      </div>
+      <div class="page-footer" aria-hidden="true"><div></div><div class="center-links"></div><div></div></div>
+    </div>
+  </template>
+
+  <!-- Split JS files, order matters -->
+  <script src="script-core.js"></script>
+  <script src="script-editor.js"></script>
+  <script src="script-cover.js"></script>
+  <script src="script-render.js"></script>
+  <script src="script-io.js"></script>
+</body>
+</html>
